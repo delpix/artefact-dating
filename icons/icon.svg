@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#2C1A0E"/>
+  <rect x="40" y="40" width="432" height="432" rx="60" fill="#3D2410"/>
+  <!-- Texture pattern -->
+  <rect x="60" y="60" width="392" height="392" rx="50" fill="none" stroke="#5C3A1E" stroke-width="2" opacity="0.5"/>
+  <!-- Hourglass / time symbol -->
+  <path d="M 180 140 L 332 140 L 332 155 L 275 230 L 332 305 L 332 320 L 180 320 L 180 305 L 237 230 L 180 155 Z" fill="none" stroke="#C8922A" stroke-width="10" stroke-linejoin="round"/>
+  <!-- Sand in top -->
+  <path d="M 195 148 L 317 148 L 265 215 L 247 215 Z" fill="#C8922A" opacity="0.7"/>
+  <!-- Sand in bottom -->
+  <path d="M 247 245 L 265 245 L 305 308 L 207 308 Z" fill="#C8922A" opacity="0.4"/>
+  <!-- Middle dot -->
+  <circle cx="256" cy="230" r="6" fill="#E8B84B"/>
+  <!-- Lines for "stratigraphy" below -->
+  <line x1="150" y1="370" x2="362" y2="370" stroke="#8B5E3C" stroke-width="3" opacity="0.8"/>
+  <line x1="165" y1="382" x2="347" y2="382" stroke="#8B5E3C" stroke-width="2" opacity="0.6"/>
+  <line x1="180" y1="392" x2="332" y2="392" stroke="#8B5E3C" stroke-width="1.5" opacity="0.4"/>
+  <!-- Top decorative lines -->
+  <line x1="150" y1="120" x2="362" y2="120" stroke="#8B5E3C" stroke-width="3" opacity="0.8"/>
+  <line x1="165" y1="108" x2="347" y2="108" stroke="#8B5E3C" stroke-width="2" opacity="0.6"/>
+  <line x1="180" y1="98" x2="332" y2="98" stroke="#8B5E3C" stroke-width="1.5" opacity="0.4"/>
+</svg>
