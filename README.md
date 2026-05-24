@@ -35,7 +35,7 @@ The app works fully **offline** after the first load, thanks to the Service Work
 ### Android (Chrome or Edge)
 
 1. Open your browser and navigate to the app URL:
-   `https://<your-username>.github.io/<your-repo>/artefact-dating/`
+   `https://github.com/delpix/artefact-dating/`
 2. Tap the browser menu (⋮ top-right corner).
 3. Select **"Add to Home screen"** (or **"Install app"**).
 4. Confirm by tapping **Add** / **Install**.
@@ -44,7 +44,7 @@ The app works fully **offline** after the first load, thanks to the Service Work
 ### iOS (Safari)
 
 1. Open **Safari** and navigate to the app URL:
-   `https://<your-username>.github.io/<your-repo>/artefact-dating/`
+   `https://github.com/delpix/artefact-dating/`
 2. Tap the **Share** button (□↑ bottom centre).
 3. Scroll down and tap **"Add to Home Screen"**.
 4. Confirm by tapping **Add** (top-right corner).
