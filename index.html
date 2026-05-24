@@ -647,7 +647,6 @@
     /**
      * SERVICE WORKER REGISTRATION
      * Registers the SW only on real domains (localhost, file://, *.github.io).
-     * Skipped silently in Claude preview or other sandboxed environments.
      */
     if ('serviceWorker' in navigator) {
       const swAllowed = ['localhost', '127.0.0.1'].includes(location.hostname)
