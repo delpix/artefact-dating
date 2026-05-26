@@ -1,6 +1,6 @@
 # Artefact Dating — PWA
 
-A Progressive Web App that estimates the age of an archaeological artefact
+A Progressive Web App that estimates the age of an artefact
 through an **interactive binary search**: the user answers a series of
 Yes / No questions and the app converges rapidly on the estimated date.
 
