@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0D0A06">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dating">
+  <meta name="description" content="Estimate the age of an archaeological artefact through interactive binary search">
+  <title>Archaeological Artefact Dating</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --night:#0D0A06;--felt:#1A1309;
+      --parch:#EDE0C0;--parch-dark:#D4C49A;--parch-edge:#fefaee;
+      --ink-dark:#1C0F02;--sepia:#5C3D18;--bronze:#8C5C1E;
+      --gold:#D4A017;--gold-light:#F0C040;--gold-glow:#FFD966;
+      --amber:#C47B0A;--red-clay:#7A2B0E;--green-lt:#8FBE6A;
+    }
+    html,body{height:100%;overflow-x:hidden}
+    body{
+      font-family:'IM Fell English',Georgia,serif;
+      background-color:var(--night);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% 0%,#1F1408 0%,transparent 70%),
+        radial-gradient(ellipse 100% 50% at 50% 100%,#0A0704 0%,transparent 70%);
+      color:var(--ink-dark);
+      min-height:100dvh;
+      display:flex;flex-direction:column;align-items:center;
+      padding:0 0.9rem 2.5rem;
+    }
+
+    /* HEADER */
+    .app-header{width:100%;max-width:460px;text-align:center;padding:1.4rem 0 1.1rem}
+    .hourglass-icon{
+      display:block;margin:0 auto 0.7rem;width:54px;height:64px;
+      filter:drop-shadow(0 0 10px rgba(212,160,23,.7)) drop-shadow(0 0 3px rgba(255,217,102,.5));
+      animation:glowPulse 3s ease-in-out infinite;
+    }
+    @keyframes glowPulse{
+      0%,100%{filter:drop-shadow(0 0 10px rgba(212,160,23,.7)) drop-shadow(0 0 3px rgba(255,217,102,.5))}
+      50%{filter:drop-shadow(0 0 20px rgba(240,192,64,.95)) drop-shadow(0 0 8px rgba(255,217,102,.9))}
+    }
+    h1{
+      font-family:'Cinzel','Times New Roman',serif;
+      font-size:clamp(1.35rem,4.5vw,1.85rem);font-weight:700;
+      letter-spacing:.1em;color:var(--gold-light);line-height:1.1;
+      text-shadow:0 0 20px rgba(212,160,23,.5),0 1px 3px rgba(0,0,0,.9);
+    }
+    h1 .subtitle{
+      display:block;font-family:'IM Fell English',Georgia,serif;
+      font-style:italic;font-weight:400;font-size:.52em;
+      letter-spacing:.18em;color:var(--parch-edge);margin-top:.3em;opacity:.8;
+    }
+    .header-rule{display:flex;align-items:center;gap:.5rem;margin:.8rem auto 0;width:220px}
+    .header-rule::before,.header-rule::after{
+      content:'';flex:1;height:1px;
+      background:linear-gradient(90deg,transparent,var(--gold),transparent);
+    }
+    .header-rule-diamond{
+      width:6px;height:6px;background:var(--gold-light);
+      transform:rotate(45deg);box-shadow:0 0 6px var(--gold-glow);
+    }
+
+    /* CARD */
+    .card{
+      width:100%;max-width:460px;
+      background:var(--parch);
+      background-image:
+        linear-gradient(to bottom,#C8B888 0%,transparent 8%,transparent 92%,#B8A060 100%),
+        linear-gradient(to right,#BEA870 0%,transparent 5%,transparent 95%,#BEA870 100%);
+      border-radius:2px;padding:1.6rem 1.4rem 1.5rem;
+      position:relative;overflow:hidden;
+      box-shadow:
+        0 0 0 1px var(--parch-edge),
+        0 0 0 3px var(--felt),
+        0 12px 40px rgba(0,0,0,.7),
+        0 4px 12px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.15);
+      animation:cardIn .45s cubic-bezier(.2,.8,.4,1) both;
+    }
+    @keyframes cardIn{
+      from{opacity:0;transform:translateY(20px) scale(.98)}
+      to{opacity:1;transform:translateY(0) scale(1)}
+    }
+    .card::before{
+      content:'';position:absolute;inset:8px;
+      border:1px solid rgba(180,140,40,.3);pointer-events:none;border-radius:1px;
+    }
+    .card::after{
+      content:'';position:absolute;inset:0;pointer-events:none;
+      background:
+        radial-gradient(circle at 0% 0%,rgba(139,92,30,.15) 0%,transparent 25%),
+        radial-gradient(circle at 100% 0%,rgba(139,92,30,.12) 0%,transparent 25%),
+        radial-gradient(circle at 0% 100%,rgba(100,70,20,.18) 0%,transparent 25%),
+        radial-gradient(circle at 100% 100%,rgba(100,70,20,.15) 0%,transparent 25%);
+    }
+
+    /* CARD TITLE */
+    .card-title{
+      font-family:'Cinzel',serif;font-size:.68rem;font-weight:600;
+      letter-spacing:.22em;text-transform:uppercase;color:var(--bronze);
+      margin-bottom:1rem;padding-bottom:.65rem;border-bottom:1px solid var(--parch-dark);
+      display:flex;align-items:center;gap:.5rem;
+    }
+    .card-title::before,.card-title::after{content:'◆';font-size:.45rem;color:var(--gold);opacity:.7}
+
+    /* QUESTION */
+    .question-text{
+      font-family:'IM Fell English',Georgia,serif;
+      font-size:clamp(1.25rem,4.2vw,1.5rem);
+      line-height:1.45;color:var(--ink-dark);
+      margin-bottom:1.4rem;min-height:2.8rem;
+    }
+    .question-text .highlight{
+      font-style:italic;color:var(--red-clay);
+      background:linear-gradient(transparent 60%,rgba(212,160,23,.2) 60%);
+      padding:0 2px;
+    }
+
+    /* INPUT */
+    .input-wrap{margin-bottom:1.2rem}
+    .input-label{
+      display:block;font-family:'Cinzel',serif;font-size:.6rem;
+      letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);margin-bottom:.5rem;
+    }
+    .field-row{
+      display:flex;align-items:center;gap:.6rem;
+      background:transparent;
+      border:none;
+      border-bottom:1px solid var(--parch-edge);
+      padding:0 .2rem;transition:border-color .2s;
+    }
+    .field-row:focus-within{
+      border-bottom-color:var(--amber);
+    }
+    input[type="text"]#initialGuess{
+      flex:1;font-family:'IM Fell English',Georgia,serif;font-size:1.6rem;
+      color:var(--ink-dark);background:transparent;border:none;outline:none;
+      padding:.55rem 0;
+    }
+    input[type="text"]#initialGuess::placeholder{color:var(--parch-edge);opacity:.7}
+    .unit-tag{
+      font-family:'Cinzel',serif;font-size:.6rem;
+      letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);opacity:.75;
+    }
+    .error-msg{font-style:italic;font-size:.78rem;color:var(--red-clay);margin-top:.35rem;min-height:1rem}
+
+    /* BTN PRIMARY */
+    .btn-primary{
+      width:100%;font-family:'Cinzel',serif;font-size:.85rem;font-weight:600;
+      letter-spacing:.18em;text-transform:uppercase;color:var(--gold-glow);
+      background:linear-gradient(160deg,#3D1A06 0%,#1C0A02 50%,#2E1406 100%);
+      border:1px solid var(--bronze);border-radius:2px;padding:.9rem 1rem;
+      cursor:pointer;transition:all .22s;
+      box-shadow:0 3px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(212,160,23,.15);
+      position:relative;overflow:hidden;
+    }
+    .btn-primary::before{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(160deg,rgba(212,160,23,.08) 0%,transparent 60%);
+    }
+    .btn-primary:hover{
+      border-color:var(--gold);color:var(--gold-light);
+      box-shadow:0 4px 18px rgba(0,0,0,.5),0 0 14px rgba(212,160,23,.25),inset 0 1px 0 rgba(212,160,23,.2);
+    }
+    .btn-primary:active{transform:translateY(1px)}
+
+    /* BTN SI/NO */
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.4rem}
+    .btn-yes,.btn-no{
+      font-family:'Cinzel',serif;font-size:1rem;font-weight:700;
+      letter-spacing:.12em;border-radius:2px;padding:1rem .5rem;
+      cursor:pointer;transition:all .18s;
+    }
+    .btn-yes{
+      background:linear-gradient(160deg,#2A4A18 0%,#162808 100%);
+      color:var(--green-lt);border:1px solid #3D6A22;
+      box-shadow:0 3px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(143,190,106,.1);
+    }
+    .btn-yes:hover{border-color:#5A9030;color:#B0E07A;box-shadow:0 5px 16px rgba(0,0,0,.5),0 0 10px rgba(90,144,48,.25)}
+    .btn-yes:active{transform:translateY(1px)}
+    .btn-no{
+      background:linear-gradient(160deg,#5A1A08 0%,#2A0804 100%);
+      color:#F0A080;border:1px solid #8C3010;
+      box-shadow:0 3px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(240,160,128,.08);
+    }
+    .btn-no:hover{border-color:#C04020;color:#FFBFA0;box-shadow:0 5px 16px rgba(0,0,0,.5),0 0 10px rgba(160,48,16,.25)}
+    .btn-no:active{transform:translateY(1px)}
+
+    /* RANGE */
+    .range-bar-wrap{margin-bottom:1.2rem}
+    .range-label{
+      font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.15em;
+      text-transform:uppercase;color:var(--bronze);margin-bottom:.4rem;
+    }
+    .range-bar{height:5px;background:var(--parch-dark);border-radius:3px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.15)}
+    .range-fill{
+      height:100%;background:linear-gradient(90deg,var(--amber),var(--gold-light));
+      border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1);
+      box-shadow:0 0 8px rgba(212,160,23,.5);
+    }
+    .range-values{display:flex;justify-content:space-between;font-size:.72rem;color:var(--sepia);margin-top:.3rem;font-style:italic}
+
+    /* HISTORY */
+    .history-wrap{margin-top:1.2rem;border-top:1px solid var(--parch-dark);padding-top:.9rem}
+    .history-title{
+      font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.18em;
+      text-transform:uppercase;color:var(--bronze);opacity:.75;margin-bottom:.55rem;
+    }
+    .history-list{display:flex;flex-direction:column;gap:.3rem;max-height:160px;overflow-y:auto}
+    .history-list::-webkit-scrollbar{width:3px}
+    .history-list::-webkit-scrollbar-track{background:var(--parch-dark)}
+    .history-list::-webkit-scrollbar-thumb{background:var(--bronze);border-radius:2px}
+    .history-item{
+      font-size:.78rem;font-style:italic;color:var(--sepia);
+      padding:.3rem .55rem;background:rgba(0,0,0,.04);
+      border-left:2px solid var(--gold);
+      animation:itemIn .2s ease both;line-height:1.45;
+    }
+    @keyframes itemIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+    /* RESULT CARD */
+    .result-card{
+      width:100%;max-width:460px;text-align:center;
+      background:var(--parch);
+      background-image:
+        linear-gradient(to bottom,#C8B888 0%,transparent 8%,transparent 92%,#B8A060 100%),
+        linear-gradient(to right,#BEA870 0%,transparent 5%,transparent 95%,#BEA870 100%);
+      border-radius:2px;padding:2.2rem 1.5rem 2rem;
+      box-shadow:0 0 0 1px var(--parch-edge),0 0 0 3px var(--felt),0 16px 48px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.12);
+      animation:cardIn .4s cubic-bezier(.2,.8,.4,1) both;
+      position:relative;
+    }
+    .result-card::before{content:'';position:absolute;inset:8px;border:1px solid rgba(180,140,40,.3);pointer-events:none}
+    .result-hourglass{
+      display:block;margin:0 auto .9rem;width:52px;height:60px;
+      filter:drop-shadow(0 0 14px rgba(212,160,23,.8)) drop-shadow(0 0 5px rgba(255,217,102,.6));
+      animation:glowPulse 2s ease-in-out infinite;
+    }
+    .result-label{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--bronze);margin-bottom:.55rem}
+    .result-value{
+      font-family:'Cinzel',serif;font-size:clamp(3rem,12vw,4.5rem);font-weight:700;
+      color:var(--ink-dark);line-height:1;margin-bottom:.15rem;
+      text-shadow:0 2px 8px rgba(0,0,0,.15);
+    }
+    .result-value .unit{display:block;font-size:.28em;font-weight:400;letter-spacing:.2em;color:var(--bronze);margin-top:.3em}
+    .result-sub{font-style:italic;font-size:.82rem;color:var(--sepia);margin-top:.6rem;opacity:.85}
+    .result-divider{display:flex;align-items:center;gap:.5rem;margin:1.4rem auto 1.3rem;width:200px}
+    .result-divider::before,.result-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--bronze),transparent)}
+    .result-divider-icon{font-size:.7rem;color:var(--gold)}
+    .btn-reset{
+      font-family:'Cinzel',serif;font-size:.72rem;font-weight:600;
+      letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);
+      background:transparent;border:1px solid var(--parch-edge);border-radius:2px;
+      padding:.65rem 1.6rem;cursor:pointer;transition:all .2s;
+    }
+    .btn-reset:hover{border-color:var(--bronze);color:var(--ink-dark);background:rgba(0,0,0,.04)}
+    .btn-restart{
+      width:100%;font-family:'Cinzel',serif;font-size:.72rem;font-weight:600;
+      letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);
+      background:transparent;border:1px solid var(--parch-edge);border-radius:2px;
+      padding:.6rem 1rem;cursor:pointer;transition:all .2s;margin-top:.6rem;
+    }
+    .btn-restart:hover{border-color:var(--bronze);color:var(--ink-dark);background:rgba(0,0,0,.04)}
+
+    /* FOOTER */
+    .app-footer{
+      margin-top:1.2rem;font-family:'Cinzel',serif;font-size:.52rem;
+      letter-spacing:.14em;text-transform:uppercase;
+      color:var(--parch-edge);opacity:.35;text-align:center;
+    }
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <!-- Inline SVG hourglass: bright gold structure on dark background, maximum contrast -->
+    <svg class="hourglass-icon" viewBox="0 0 54 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="goldG" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#F0C040"/>
+          <stop offset="50%"  stop-color="#D4A017"/>
+          <stop offset="100%" stop-color="#A87010"/>
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="1.8" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- Aste orizzontali -->
+      <rect x="4"  y="2"  width="46" height="5" rx="2.5" fill="url(#goldG)" filter="url(#glow)"/>
+      <rect x="4"  y="57" width="46" height="5" rx="2.5" fill="url(#goldG)" filter="url(#glow)"/>
+      <!-- Upper sand fill -->
+      <path d="M8 7 L46 7 L31 30 L23 30 Z" fill="#C47B0A" opacity="0.65"/>
+      <!-- Lower sand fill -->
+      <path d="M23 34 L31 34 L46 57 L8 57 Z" fill="#C47B0A" opacity="0.80"/>
+      <!-- Upper outline — thick golden stroke for visibility -->
+      <path d="M8 7 L46 7 L31 30 L23 30 Z"   fill="none" stroke="url(#goldG)" stroke-width="2.5" stroke-linejoin="round" filter="url(#glow)"/>
+      <!-- Lower outline -->
+      <path d="M23 34 L31 34 L46 57 L8 57 Z" fill="none" stroke="url(#goldG)" stroke-width="2.5" stroke-linejoin="round" filter="url(#glow)"/>
+      <!-- Central neck -->
+      <rect x="21" y="28.5" width="12" height="7" rx="1.5" fill="#D4A017" filter="url(#glow)"/>
+      <!-- Animated sand grains -->
+      <circle cx="27" cy="34" r="1.3" fill="#F0C040">
+        <animate attributeName="cy" values="34;51;34" dur="1.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0.15;1" dur="1.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="24.5" cy="41" r="0.9" fill="#FFD966">
+        <animate attributeName="cy" values="41;54;41" dur="2.3s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="opacity" values="0.8;0.1;0.8" dur="2.3s" repeatCount="indefinite" begin="0.5s"/>
+      </circle>
+      <circle cx="29.5" cy="37" r="1.0" fill="#F0C040">
+        <animate attributeName="cy" values="37;53;37" dur="2.0s" repeatCount="indefinite" begin="1.0s"/>
+        <animate attributeName="opacity" values="0.9;0.1;0.9" dur="2.0s" repeatCount="indefinite" begin="1.0s"/>
+      </circle>
+    </svg>
+
+    <h1>Archaeological Artefact Dating<span class="subtitle">Interactive Binary Search</span></h1>
+    <div class="header-rule"><div class="header-rule-diamond"></div></div>
+  </header>
+
+  <!-- PHASE 1 — Initial age estimate -->
+  <div class="card" id="phaseInit">
+    <p class="card-title">Artefact Analysis</p>
+    <p class="question-text">What is the <span class="highlight">estimated age</span> of the artefact?</p>
+    <div class="input-wrap">
+      <label class="input-label" for="initialGuess">Initial estimate</label>
+      <div class="field-row">
+        <input type="text" id="initialGuess" inputmode="numeric" placeholder="2,000" autocomplete="off" oninput="formatInput(this)">
+        <span class="unit-tag">years</span>
+      </div>
+      <div class="error-msg" id="initError"></div>
+    </div>
+    <button class="btn-primary" onclick="startProcess()">⊳ Start Analysis</button>
+  </div>
+
+  <!-- PHASE 2 — Binary search questions -->
+  <div class="card hidden" id="phaseGuess">
+    <p class="card-title">Interrogation</p>
+    <p class="question-text" id="questionText"></p>
+    <div class="range-bar-wrap" id="rangeWrap" style="display:none">
+      <p class="range-label">Estimated range</p>
+      <div class="range-bar"><div class="range-fill" id="rangeFill" style="width:50%"></div></div>
+      <div class="range-values"><span id="rangeMin">—</span><span id="rangeMax">—</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="processAnswer(true)">✓ &nbsp;Yes</button>
+      <button class="btn-no"  onclick="processAnswer(false)">✗ &nbsp;No</button>
+    </div>
+    <button class="btn-restart" onclick="resetAll()">↺ &nbsp;Restart Analysis</button>
+    <div class="history-wrap" id="historyWrap" style="display:none">
+      <p class="history-title">◆ Answer Log</p>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 — Result -->
+  <div class="result-card hidden" id="phaseResult">
+      <defs>
+        <linearGradient id="goldG2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#F0C040"/>
+          <stop offset="50%"  stop-color="#D4A017"/>
+          <stop offset="100%" stop-color="#A87010"/>
+        </linearGradient>
+        <filter id="glow2">
+          <feGaussianBlur stdDeviation="2.2" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <rect x="4"  y="2"  width="46" height="5" rx="2.5" fill="url(#goldG2)" filter="url(#glow2)"/>
+      <rect x="4"  y="57" width="46" height="5" rx="2.5" fill="url(#goldG2)" filter="url(#glow2)"/>
+      <path d="M8 7 L46 7 L31 30 L23 30 Z"   fill="#C47B0A" opacity="0.6"/>
+      <path d="M23 34 L31 34 L46 57 L8 57 Z" fill="#C47B0A" opacity="0.8"/>
+      <path d="M8 7 L46 7 L31 30 L23 30 Z"   fill="none" stroke="url(#goldG2)" stroke-width="2.8" stroke-linejoin="round" filter="url(#glow2)"/>
+      <path d="M23 34 L31 34 L46 57 L8 57 Z" fill="none" stroke="url(#goldG2)" stroke-width="2.8" stroke-linejoin="round" filter="url(#glow2)"/>
+      <rect x="21" y="28.5" width="12" height="7" rx="1.5" fill="#D4A017" filter="url(#glow2)"/>
+    </svg>
+    <p class="result-label">◆ Estimated Artefact Age ◆</p>
+    <div class="result-value" id="resultValue">—<span class="unit">years</span></div>
+    <p class="result-sub" id="resultSub"></p>
+    <div class="result-divider"><span class="result-divider-icon">⧖</span></div>
+    <button class="btn-reset" onclick="resetAll()">↺ &nbsp;New Analysis</button>
+  </div>
+
+  <footer class="app-footer">Archaeological Artefact Dating · PWA · v1.1</footer>
+
+  <script>
+    /**
+     * RESOLUTION CLUSTER TABLE
+     * Returns the resolution (minimum meaningful precision) in years
+     * based on the definitive estimated age (after any doublings).
+     * The search loop stops as soon as (max - min) <= resolution.
+     *
+     * Age range (years)          Resolution
+     * ─────────────────────────────────────
+     *        10 –     10,000  →      10 yrs
+     *    10,001 –    100,000  →     100 yrs
+     *   100,001 –  1,000,000  →   1,000 yrs
+     * 1,000,001 – 100,000,000 →  10,000 yrs
+     *      > 100,000,000      → 100,000 yrs
+     */
+    function getResolution(age) {
+      if (age <= 10000)     return 10;
+      if (age <= 100000)    return 100;
+      if (age <= 1000000)   return 1000;
+      if (age <= 100000000) return 10000;
+      return 100000;
+    }
+
+    /**
+     * APPLICATION STATE
+     * start        : current lower bound of the search interval
+     * end          : current upper bound of the search interval
+     * mid          : midpoint proposed in the current question
+     * lastKnownFalse : last value for which the user answered "No" in the initial phase
+     * isInitialPhase : true while doubling the estimate; false during binary search
+     * steps        : total number of questions asked
+     * resolution   : precision threshold computed from getResolution()
+     */
+    let state = {
+      start: 1, end: 0, mid: 0,
+      lastKnownFalse: 0,
+      isInitialPhase: true,
+      steps: 0,
+      resolution: 1
+    };
+
+    /**
+     * FORMAT INPUT
+     * Formats the text field in real time, inserting thousand separators
+     * while the user types. Non-numeric characters are stripped out.
+     * @param {HTMLInputElement} el - the input element
+     */
+    function formatInput(el) {
+      const raw = el.value.replace(/\D/g, '');
+      if (!raw) { el.value = ''; return; }
+      el.value = parseInt(raw, 10).toLocaleString('en-US', {
+        useGrouping: true, minimumFractionDigits: 0, maximumFractionDigits: 0
+      });
+    }
+
+    /**
+     * START PROCESS
+     * Reads and validates the initial estimate entered by the user.
+     * Accepted range: 10 – 4,500,000,000 years.
+     * If valid, hides Phase 1 and shows Phase 2 (initial doubling phase).
+     */
+    function startProcess() {
+      // Strip thousand separators before parsing
+      const raw = document.getElementById('initialGuess').value
+        .replace(/,/g, '').trim();
+      const val = parseInt(raw, 10);
+      const err = document.getElementById('initError');
+      if (!val || val < 10 || val > 4500000000) {
+        err.textContent = 'Please enter a value between 10 and 4,500,000,000 years.';
+        return;
+      }
+      err.textContent = '';
+      state.end = val;
+      state.isInitialPhase = true;
+      state.steps = 0;
+      show('phaseGuess');
+      hide('phaseInit');
+      updateQuestion();
+    }
+
+    /**
+     * PROCESS ANSWER
+     * Handles the user's Yes/No response.
+     *
+     * INITIAL PHASE (isInitialPhase = true):
+     *   - Yes → the current estimate is confirmed as the upper bound.
+     *           Resolution is computed, the search interval is set,
+     *           and the binary search begins.
+     *   - No  → the estimate is too low; the upper bound is doubled.
+     *           If doubling would exceed 4,500,000,000 the process is
+     *           aborted and the user is asked to enter a new estimate.
+     *
+     * BINARY SEARCH PHASE (isInitialPhase = false):
+     *   - Yes → the artefact is younger than mid; upper bound = mid.
+     *   - No  → the artefact is older than mid;  lower bound = mid.
+     *   After updating bounds, if (end - start) <= resolution the
+     *   search terminates and the result is displayed.
+     *
+     * @param {boolean} isYes - true if the user tapped Yes, false for No
+     */
+    function processAnswer(isYes) {
+      state.steps++;
+
+      if (state.isInitialPhase) {
+        if (isYes) {
+          // Confirmed upper bound — compute resolution from the definitive age
+          state.resolution = getResolution(state.end);
+          state.isInitialPhase = false;
+          // Lower bound: half of end if we previously doubled, otherwise 1
+          state.start = state.lastKnownFalse ? Math.floor(state.end / 2) : 1;
+          addHistory('✓ Yes — search started: ' + fmt(state.start) + '–' + fmt(state.end) +
+            ' yrs (resolution: ' + fmt(state.resolution) + ' yr/s)');
+          startBinarySearch();
+        } else {
+          // Guard: prevent doubling beyond the maximum allowed age
+          if (state.end * 2 > 4500000000) {
+            state = { start:1, end:0, mid:0, lastKnownFalse:0,
+                      isInitialPhase:true, steps:0, resolution:1 };
+            hide('phaseGuess');
+            show('phaseInit');
+            document.getElementById('initError').textContent =
+              'Doubling would exceed 4,500,000,000 years. Please enter a new estimate.';
+            return;
+          }
+          // Double the upper bound and ask again
+          state.lastKnownFalse = state.end;
+          state.end *= 2;
+          addHistory('✗ No — new estimate: ' + fmt(state.end) + ' yrs');
+          updateQuestion();
+        }
+        return;
+      }
+
+      // Binary search phase — update the appropriate bound
+      if (isYes) {
+        state.end = state.mid;
+        addHistory('✓ Yes — upper bound reduced to ' + fmt(state.end) + ' yrs');
+      } else {
+        state.start = state.mid;
+        addHistory('✗ No — lower bound raised to ' + fmt(state.start) + ' yrs');
+      }
+
+      // Termination condition: interval width within resolution
+      if (state.end - state.start <= state.resolution) {
+        showResult();
+        return;
+      }
+
+      // Compute next midpoint and continue
+      state.mid = Math.max(1, Math.floor(state.start + (state.end - state.start) / 2));
+      updateQuestion();
+    }
+
+    /**
+     * START BINARY SEARCH
+     * Calculates the first midpoint and reveals the range bar and answer log.
+     * Called once, immediately after the initial phase ends with a Yes.
+     */
+    function startBinarySearch() {
+      state.mid = Math.max(1, Math.floor(state.start + (state.end - state.start) / 2));
+      document.getElementById('rangeWrap').style.display = 'block';
+      document.getElementById('historyWrap').style.display = 'block';
+      updateQuestion();
+    }
+
+    /**
+     * UPDATE QUESTION
+     * Refreshes the question text with the current value being tested (mid or end).
+     * Also updates the range bar and min/max labels during binary search.
+     */
+    function updateQuestion() {
+      const val = state.isInitialPhase ? state.end : state.mid;
+      document.getElementById('questionText').innerHTML =
+        'Is the artefact less than <span class="highlight">' + fmt(val) + '</span> years old?';
+      if (!state.isInitialPhase) {
+        document.getElementById('rangeMin').textContent = fmt(state.start) + ' yr';
+        document.getElementById('rangeMax').textContent = fmt(state.end) + ' yr';
+        const pct = state.end > 0
+          ? Math.round(((state.mid - state.start) / (state.end - state.start)) * 100)
+          : 50;
+        document.getElementById('rangeFill').style.width = pct + '%';
+      }
+    }
+
+    /**
+     * SHOW RESULT
+     * Called when the termination condition is met.
+     * The displayed value is state.start rounded DOWN to the nearest
+     * multiple of resolution (approximation to the less significant digits).
+     * Example: state.start = 15,534 yrs, resolution = 100 → shows 15,500 yrs.
+     */
+    function showResult() {
+      const approximated = Math.floor(state.start / state.resolution) * state.resolution;
+      document.getElementById('resultValue').innerHTML =
+        fmt(approximated) + '<span class="unit">years</span>';
+      document.getElementById('resultSub').textContent =
+        'Determined in ' + state.steps + ' questions · resolution: ' + fmt(state.resolution) + ' yr/s';
+      hide('phaseGuess');
+      show('phaseResult');
+    }
+
+    /**
+     * RESET ALL
+     * Restores the application to its initial state:
+     * clears the input field, answer log, range bar, and all phase cards,
+     * then shows Phase 1 again.
+     */
+    function resetAll() {
+      state = { start:1, end:0, mid:0, lastKnownFalse:0,
+                isInitialPhase:true, steps:0, resolution:1 };
+      document.getElementById('initialGuess').value = '';
+      document.getElementById('historyList').innerHTML = '';
+      document.getElementById('rangeWrap').style.display = 'none';
+      document.getElementById('historyWrap').style.display = 'none';
+      hide('phaseResult');
+      hide('phaseGuess');
+      show('phaseInit');
+    }
+
+    /** Shows a card by removing the 'hidden' CSS class. */
+    function show(id) { document.getElementById(id).classList.remove('hidden'); }
+
+    /** Hides a card by adding the 'hidden' CSS class. */
+    function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+    /**
+     * FORMAT NUMBER
+     * Returns a locale-formatted string with thousand separators.
+     * Uses en-US locale (comma as thousands separator).
+     * @param {number} n - the number to format
+     * @returns {string}
+     */
+    function fmt(n) {
+      return n.toLocaleString('en-US', {
+        useGrouping: true, minimumFractionDigits: 0, maximumFractionDigits: 0
+      });
+    }
+
+    /**
+     * ADD HISTORY ENTRY
+     * Prepends a new entry to the answer log (most recent on top).
+     * @param {string} text - the log line to display
+     */
+    function addHistory(text) {
+      const list = document.getElementById('historyList');
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.textContent = text;
+      list.insertBefore(item, list.firstChild);
+    }
+
+    /**
+     * SERVICE WORKER REGISTRATION
+     * Registers the SW only on real domains (localhost, file://, *.github.io).
+     */
+    if ('serviceWorker' in navigator) {
+      const swAllowed = ['localhost', '127.0.0.1'].includes(location.hostname)
+        || location.hostname.endsWith('.github.io')
+        || location.protocol === 'file:';
+      if (swAllowed) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(() => console.log('Service Worker registered successfully.'))
+            .catch(err => console.warn('Service Worker registration failed:', err));
+        });
+      } else {
+        console.info('SW: preview environment detected (' + location.hostname +
+          '), registration skipped. Will activate on GitHub Pages.');
+      }
+    }
+
+    // Allow the user to confirm the initial estimate by pressing Enter
+    document.getElementById('initialGuess').addEventListener('keydown', e => {
+      if (e.key === 'Enter') startProcess();
+    });
+  </script>
+</body>
+</html>

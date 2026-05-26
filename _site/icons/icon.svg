@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="goldG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#F0C040"/>
+      <stop offset="50%"  stop-color="#D4A017"/>
+      <stop offset="100%" stop-color="#A87010"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background: dark night rounded square -->
+  <rect width="512" height="512" rx="80" fill="#0D0A06"/>
+
+  <!-- ── Clessidra: viewBox originale 54x64, scalata a ~420x494 centrata ──
+       Scala: 420/54 = 7.78 — traslazione: x=(512-420)/2=46, y=(512-494)/2=9
+       Tutti i valori originali moltiplicati per 7.78 e traslati
+  -->
+  <g transform="translate(46, 9) scale(7.78)">
+
+    <!-- Tappi superiore e inferiore -->
+    <rect x="4"  y="2"  width="46" height="5" rx="2.5"
+          fill="url(#goldG)" filter="url(#glow)"/>
+    <rect x="4"  y="57" width="46" height="5" rx="2.5"
+          fill="url(#goldG)" filter="url(#glow)"/>
+
+    <!-- Sabbia superiore: poca — sottile striscia in cima -->
+    <path d="M8 7 L46 7 L31 30 L23 30 Z"
+          fill="#C47B0A" opacity="0.65"/>
+
+    <!-- Sabbia inferiore: molta — quasi piena -->
+    <path d="M23 34 L31 34 L46 57 L8 57 Z"
+          fill="#C47B0A" opacity="0.80"/>
+
+    <!-- Outline superiore -->
+    <path d="M8 7 L46 7 L31 30 L23 30 Z"
+          fill="none" stroke="url(#goldG)" stroke-width="2.5"
+          stroke-linejoin="round" filter="url(#glow)"/>
+
+    <!-- Outline inferiore -->
+    <path d="M23 34 L31 34 L46 57 L8 57 Z"
+          fill="none" stroke="url(#goldG)" stroke-width="2.5"
+          stroke-linejoin="round" filter="url(#glow)"/>
+
+    <!-- Collo centrale -->
+    <rect x="21" y="28.5" width="12" height="7" rx="1.5"
+          fill="#D4A017" filter="url(#glow)"/>
+
+  </g>
+</svg>
