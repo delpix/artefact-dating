@@ -1,5 +1,5 @@
 /**
- * SERVICE WORKER — Archaeological Artefact Dating PWA
+ * SERVICE WORKER — Artefact Dating PWA
  * Strategy: cache-first — all assets are served from cache when available,
  * falling back to the network for uncached resources.
  * This ensures the app works fully offline after the first load.

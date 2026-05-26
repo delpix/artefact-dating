@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Dating">
-  <meta name="description" content="Estimate the age of an archaeological artefact through interactive binary search">
-  <title>Archaeological Artefact Dating</title>
+  <meta name="description" content="Estimate the age of an artefact through interactive binary search">
+  <title>Artefact Dating</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192x192.png">
@@ -142,13 +142,13 @@
       border-bottom-color:var(--amber);
     }
     input[type="text"]#initialGuess{
-      flex:1;font-family:'IM Fell English',Georgia,serif;font-size:1.6rem;
+      flex:1;min-width:0;font-family:'IM Fell English',Georgia,serif;font-size:1.6rem;
       color:var(--ink-dark);background:transparent;border:none;outline:none;
       padding:.55rem 0;
     }
     input[type="text"]#initialGuess::placeholder{color:var(--parch-edge);opacity:.7}
     .unit-tag{
-      font-family:'Cinzel',serif;font-size:.6rem;
+      flex-shrink:0;font-family:'Cinzel',serif;font-size:.6rem;
       letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);opacity:.75;
     }
     .error-msg{font-style:italic;font-size:.78rem;color:var(--red-clay);margin-top:.35rem;min-height:1rem}
@@ -324,7 +324,7 @@
       </circle>
     </svg>
 
-    <h1>Archaeological Artefact Dating<span class="subtitle">Interactive Binary Search</span></h1>
+    <h1>Artefact Dating<span class="subtitle">Interactive Binary Search</span></h1>
     <div class="header-rule"><div class="header-rule-diamond"></div></div>
   </header>
 
@@ -391,7 +391,7 @@
     <button class="btn-reset" onclick="resetAll()">↺ &nbsp;New Analysis</button>
   </div>
 
-  <footer class="app-footer">Archaeological Artefact Dating · PWA · v1.1</footer>
+  <footer class="app-footer">Artefact Dating · PWA · v1.1</footer>
 
   <script>
     /**
@@ -647,6 +647,7 @@
     /**
      * SERVICE WORKER REGISTRATION
      * Registers the SW only on real domains (localhost, file://, *.github.io).
+     * Skipped silently in Claude preview or other sandboxed environments.
      */
     if ('serviceWorker' in navigator) {
       const swAllowed = ['localhost', '127.0.0.1'].includes(location.hostname)

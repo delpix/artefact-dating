@@ -1,7 +1,7 @@
 {
-  "name": "Archaeological Artefact Dating",
-  "short_name": "Artefact Dating",
-  "description": "Estimate the age of an archaeological artefact through interactive binary search",
+  "name": "Artefact Dating",
+  "short_name": "Dating",
+  "description": "Estimate the age of an artefact through interactive binary search",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
