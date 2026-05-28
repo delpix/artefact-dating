@@ -468,6 +468,7 @@
       state.end = val;
       state.isInitialPhase = true;
       state.steps = 0;
+      state.initialGuess = val;  // saved for resetToInit restore
       show('phaseGuess');
       hide('phaseInit');
       updateQuestion();
@@ -493,6 +494,30 @@
      *
      * @param {boolean} isYes - true if the user tapped Yes, false for No
      */
+    /**
+     * RESET TO INITIAL PHASE
+     * Resets state and UI showing phaseInit with an error message.
+     * Used when a bound check fails (too low or too high).
+     */
+    function resetToInit(message) {
+      const savedGuess = state.initialGuess || 0;
+      state = { start:1, end:0, mid:0, lastKnownFalse:0,
+                isInitialPhase:true, steps:0, resolution:1, initialGuess:0 };
+      document.getElementById('historyList').innerHTML = '';
+      document.getElementById('rangeWrap').style.display = 'none';
+      document.getElementById('historyWrap').style.display = 'none';
+      hide('phaseGuess');
+      hide('phaseResult');
+      show('phaseInit');
+      // Restore the original estimate in the input field
+      if (savedGuess > 0) {
+        document.getElementById('initialGuess').value =
+          savedGuess.toLocaleString('en-US', {useGrouping:true,
+            minimumFractionDigits:0, maximumFractionDigits:0});
+      }
+      document.getElementById('initError').textContent = message;
+    }
+
     function processAnswer(isYes) {
       state.steps++;
 
@@ -509,12 +534,7 @@
         } else {
           // Guard: prevent doubling beyond the maximum allowed age
           if (state.end * 2 > 4500000000) {
-            state = { start:1, end:0, mid:0, lastKnownFalse:0,
-                      isInitialPhase:true, steps:0, resolution:1 };
-            hide('phaseGuess');
-            show('phaseInit');
-            document.getElementById('initError').textContent =
-              'Doubling would exceed 4,500,000,000 years. Please enter a new estimate.';
+            resetToInit('Doubling would exceed 4,500,000,000 years. Please enter a new estimate.');
             return;
           }
           // Double the upper bound and ask again
@@ -541,8 +561,16 @@
         return;
       }
 
-      // Compute next midpoint and continue
-      state.mid = Math.max(1, Math.floor(state.start + (state.end - state.start) / 2));
+      // Compute next midpoint
+      const nextMid = Math.floor(state.start + (state.end - state.start) / 2);
+
+      // Lower bound guard: if next mid would be below 10, reset and ask for new estimate
+      if (nextMid < 10) {
+        resetToInit('The search has reached the minimum age of 10 years. Please enter a new estimate.');
+        return;
+      }
+
+      state.mid = nextMid;
       updateQuestion();
     }
 
@@ -552,7 +580,15 @@
      * Called once, immediately after the initial phase ends with a Yes.
      */
     function startBinarySearch() {
-      state.mid = Math.max(1, Math.floor(state.start + (state.end - state.start) / 2));
+      const nextMid = Math.floor(state.start + (state.end - state.start) / 2);
+
+      // Lower bound guard on first midpoint too
+      if (nextMid < 10) {
+        resetToInit('The search has reached the minimum age of 10 years. Please enter a new estimate.');
+        return;
+      }
+
+      state.mid = nextMid;
       document.getElementById('rangeWrap').style.display = 'block';
       document.getElementById('historyWrap').style.display = 'block';
       updateQuestion();
